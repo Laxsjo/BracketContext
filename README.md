@@ -42,7 +42,7 @@ An example defining a new bracket type in `settings.json`:
 
 You could then use the context in a shortcut, adding the following to `keybinding.json`:
 
-This shortcut will only activate when the cursor is in between a pair of round brackets `()`.
+_This shortcut will only activate when the cursor is in between a pair of round brackets `()`_
 
 ```json
 {
