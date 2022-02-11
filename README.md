@@ -1,70 +1,59 @@
-# bracketcontext README
+# Bracket Context
 
-This is the README for your extension "bracketcontext". After writing up a brief description, we recommend including the following sections.
+This visual studio code extension adds new contexts that specify if the cursor is currently inside a pair of brackets.
+These contexts can then be used in shortcut when clauses.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+This extension adds the following features:
 
-For example if there is an image subfolder under your extension project workspace:
+-   Shortcut contexts for when the cursor is in between a pair of brackets.
+-   The ability to customize and define new bracket types.
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+> **Note:** This extension doesn't add any new commands or shortcuts. It only adds new contexts which you can use when creating new shortcuts.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### Bracket types
 
-For example:
+`bracketcontext.brackets`: The list of defined bracket types.
 
-This extension contributes the following settings:
+A bracket type defines two characters which define the bracket types and a name which is used for the context names.
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+It should contain two properties:
 
-## Known Issues
+-   `characters`: A list of two single character strings.
+-   `name`: A string.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+---
+
+## Examples
+
+An example defining a new bracket type in `settings.json`:
+
+```json
+"bracketcontext.brackets": [
+    {
+      "characters": ["(", ")"],
+      "name": "round"
+    }
+]
+```
+
+You could then use the context in a shortcut, adding the following to `keybinding.json`:
+
+This shortcut will only activate when the cursor is in between a pair of round brackets `()`.
+
+```json
+{
+    "key": "a_key",
+    "command": "a_command",
+    "when": "textInputFocus && bracketcontext.bracket.round"
+}
+```
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Initial release of this extension
