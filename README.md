@@ -9,8 +9,9 @@ This extension adds the following features:
 
 -   Shortcut contexts for when the cursor is in between a pair of brackets.
 -   The ability to customize and define new bracket types.
+-   Commands for jumping to start and end of pairs of brackets.
 
-> **Note:** This extension doesn't add any new commands or shortcuts. It only adds new contexts which you can use when creating new shortcuts.
+> **Note:** This extension doesn't add any shortcuts. It only adds new contexts and commands which you can use when creating new shortcuts.
 
 ## Extension Settings
 
@@ -29,14 +30,16 @@ It should contain two properties:
 
 ## Examples
 
+### Adding A New Bracket Context
+
 An example defining a new bracket type in `settings.json`:
 
 ```json
 "bracketcontext.brackets": [
-    {
-      "characters": ["(", ")"],
-      "name": "round"
-    }
+  {
+    "characters": ["(", ")"],
+    "name": "round"
+  }
 ]
 ```
 
@@ -49,6 +52,30 @@ _This shortcut will only activate when the cursor is in between a pair of round 
     "key": "a_key",
     "command": "a_command",
     "when": "textInputFocus && bracketcontext.bracket.round"
+}
+```
+
+### Adding Jump To Bracket Shortcuts
+
+A new shortcut which moves the cursor to the end and start of the current round `()` bracket pair.
+Add the following to `keybinding.json`:
+
+```json
+{
+  "key": "pageup",
+  "command": "bracketcontext.jumpBracketStart",
+  "args": {
+    "characters": ["(", ")"]
+  },
+  "when": "editorTextFocus"
+},
+{
+  "key": "pagedown",
+  "command": "bracketcontext.jumpBracketEnd",
+  "args": {
+    "characters": ["(", ")"]
+  },
+  "when": "editorTextFocus"
 }
 ```
 
