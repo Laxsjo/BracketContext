@@ -13,11 +13,11 @@ function getBracketTypes(): BracketType[] | undefined {
 
 function setBracketContextState(bracketType: BracketType, state: boolean) {
     vscode.commands.executeCommand("setContext", `bracketcontext.bracket.${bracketType.name}`, state);
-    console.log(`bracketcontext.bracket.${bracketType.name}:`, state);
+    // console.log(`bracketcontext.bracket.${bracketType.name}:`, state);
 }
 function setWhiteSpaceContextState(state: boolean) {
     vscode.commands.executeCommand("setContext", `bracketcontext.cursorWhitespaceToLeft`, state);
-    console.log(`bracketcontext.cursorWhitespaceToLeft:`, state);
+    // console.log(`bracketcontext.cursorWhitespaceToLeft:`, state);
 }
 
 function checkBracketContext(document: vscode.TextDocument, pos: vscode.Position) {
@@ -25,20 +25,11 @@ function checkBracketContext(document: vscode.TextDocument, pos: vscode.Position
     if (bracketTypes === undefined) {
         return;
     }
+
     for (const bracketType of bracketTypes) {
         let matchedPos = brackets.unmatchedBracketPos(document, pos, brackets.Direction.right, bracketType.characters);
         setBracketContextState(bracketType, matchedPos !== null);
     }
-    // let bracketType: BracketType = {
-    //     characters: ["{", "}"],
-    //     name: "curly",
-    // };
-    // let matchedPos = brackets.unmatchedBracketPos(document, pos, brackets.Direction.right, bracketType.characters);
-    // if (matchedPos !== null) {
-    //     setBracketContextState(bracketType, true);
-    // } else {
-    //     setBracketContextState(bracketType, false);
-    // }
 }
 
 function checkWhiteSpaceContext(document: vscode.TextDocument, pos: vscode.Position) {
@@ -48,10 +39,6 @@ function checkWhiteSpaceContext(document: vscode.TextDocument, pos: vscode.Posit
 }
 
 export function checkContexts(document: vscode.TextDocument, pos: vscode.Position) {
-    console.group("Contexts");
-
     checkWhiteSpaceContext(document, pos);
     checkBracketContext(document, pos);
-
-    console.groupEnd();
 }

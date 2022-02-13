@@ -6,9 +6,7 @@ export enum Direction {
 }
 
 function charAtPos(document: vscode.TextDocument, pos: vscode.Position): string {
-    let line = document.lineAt(pos).text;
-    let ind = pos.character;
-    return line[ind];
+    return document.lineAt(pos).text[pos.character];
 }
 
 function shiftPos(document: vscode.TextDocument, pos: vscode.Position, dir: Direction): vscode.Position | null {
@@ -25,6 +23,61 @@ function shiftPos(document: vscode.TextDocument, pos: vscode.Position, dir: Dire
 }
 
 export function unmatchedBracketPos(document: vscode.TextDocument, pos: vscode.Position, dir: Direction, brackets: string[]): vscode.Position | null {
+    let orderedBrackets: string[] = [];
+    orderedBrackets[0] = brackets[dir === -1 ? 0 : 1];
+    orderedBrackets[1] = brackets[dir === -1 ? 1 : 0];
+
+    let offset = document.offsetAt(pos);
+    let text = document.getText();
+    if (dir === -1) {
+        text = text.slice(0, offset);
+    } else {
+        text = text.slice(offset, undefined);
+    }
+
+    let regex = new RegExp(`\\${brackets[0]}|\\${brackets[1]}`, "g");
+    let bracketMatchIterator = text.matchAll(regex);
+
+    let bracketMatches: RegExpMatchArray[] = Array.from(bracketMatchIterator);
+    if (dir === -1) {
+        bracketMatches = bracketMatches.reverse();
+    }
+
+    let unpairedAmount: number = 0;
+    let foundOffset: number | null = null;
+
+    for (const match of bracketMatches) {
+        if (match.index === undefined) {
+            continue;
+        }
+        let char = match[0];
+
+        if (char === orderedBrackets[0]) {
+            if (unpairedAmount > 0) {
+                unpairedAmount--;
+            } else {
+                foundOffset = dir === -1 ? match.index : offset + match.index;
+                if (dir === 1) {
+                    foundOffset += 1; // Always place cursor on outside of bracket.
+                }
+                break;
+            }
+        } else if (char === orderedBrackets[1]) {
+            unpairedAmount++;
+        }
+    }
+
+    if (foundOffset) {
+        let foundPos = document.positionAt(foundOffset);
+        if (document.validatePosition(foundPos)) {
+            return foundPos;
+        }
+    }
+    return null;
+}
+
+export function unmatchedBracketPosOld(document: vscode.TextDocument, pos: vscode.Position, dir: Direction, brackets: string[]): vscode.Position | null {
+    // console.log("start bracket search:", brackets);
     let orderedBrackets: string[] = [];
     orderedBrackets[0] = brackets[dir === -1 ? 0 : 1];
     orderedBrackets[1] = brackets[dir === -1 ? 1 : 0];
@@ -48,7 +101,7 @@ export function unmatchedBracketPos(document: vscode.TextDocument, pos: vscode.P
             if (unpairedAmount > 0) {
                 unpairedAmount--;
             } else {
-                // console.log(currentPos, "->", char);
+                // console.log("end bracket search:", brackets, "pos", dir === -1 ? currentPos : shiftPos(document, currentPos, 1));
                 return dir === -1 ? currentPos : shiftPos(document, currentPos, 1); // Places pos on the outside of bracket
             }
         } else if (char === orderedBrackets[1]) {
@@ -56,7 +109,9 @@ export function unmatchedBracketPos(document: vscode.TextDocument, pos: vscode.P
         }
 
         currentPos = shiftPos(document, currentPos, dir);
+        // console.log("moved position", dir, "for", brackets, "pos", currentPos);
     }
 
+    // console.log("end bracket search:", brackets, "pos", null);
     return null;
 }
