@@ -5,6 +5,21 @@ export enum Direction {
     right = 1,
 }
 
+function getLineComments(): string[] | undefined {
+    let lineComments: string[] | undefined = vscode.workspace.getConfiguration("bracketcontext").get("lineComments");
+    return lineComments;
+}
+
+function getBlockComments(): string[][] | undefined {
+    let blockComments: string[][] | undefined = vscode.workspace.getConfiguration("bracketcontext").get("blockComments");
+    return blockComments;
+}
+
+function getstringDelimiters(): string[] | undefined {
+    let stringDelimiters: string[] | undefined = vscode.workspace.getConfiguration("bracketcontext").get("stringDelimiters");
+    return stringDelimiters;
+}
+
 function charAtPos(document: vscode.TextDocument, pos: vscode.Position): string {
     return document.lineAt(pos).text[pos.character];
 }
@@ -22,7 +37,32 @@ function shiftPos(document: vscode.TextDocument, pos: vscode.Position, dir: Dire
     return pos.isEqual(newPos) ? document.positionAt(absolutePos + dir) : newPos;
 }
 
+function escapeRegexString(regexString: string): string {
+    let specialChars = ["/", "\\", "^", "$", ".", "|", "?", "*", "+", "-", "(", ")", "{", "}", "[", "]"];
+    let escapedString: string = "";
+    // console.log(regexString, ":", regexString.length);
+
+    for (let i = 0; i < regexString.length; i++) {
+        escapedString += specialChars.indexOf(regexString[i]) === -1 ? regexString[i] : "\\" + regexString[i];
+    }
+    return escapedString;
+}
+
+function replaceCharacters(string: string, chars: string[], replaceChar: string): string {
+    let escapedChars = chars.map((char: string): string => {
+        return escapeRegexString(char);
+    });
+    // console.log(escapedChars.join(""));
+
+    // console.log(string, "=>", string.replace(new RegExp(`[${escapedChars.join("")}]`, "g"), replaceChar));
+    return string.replace(new RegExp(`[${escapedChars.join("")}]`, "g"), replaceChar);
+}
+
 export function unmatchedBracketPos(document: vscode.TextDocument, pos: vscode.Position, dir: Direction, brackets: string[]): vscode.Position | null {
+    let lineComments = getLineComments();
+    let blockComments = getBlockComments();
+    let stringDelimiters = getstringDelimiters();
+
     let orderedBrackets: string[] = [];
     orderedBrackets[0] = brackets[dir === -1 ? 0 : 1];
     orderedBrackets[1] = brackets[dir === -1 ? 1 : 0];
@@ -33,6 +73,44 @@ export function unmatchedBracketPos(document: vscode.TextDocument, pos: vscode.P
         text = text.slice(0, offset);
     } else {
         text = text.slice(offset, undefined);
+    }
+
+    if (lineComments !== undefined) {
+        let escapedLineComments: string[] = [];
+        for (let i = 0; i < lineComments.length; i++) {
+            escapedLineComments[i] = escapeRegexString(lineComments[i]);
+        }
+        let matchRegex = escapedLineComments.join("|");
+        let regex = new RegExp(`(${matchRegex}).*`, "g");
+        text = text.replace(regex, (substring: string): string => {
+            // console.log(substring, "=>", replaceCharacters(substring, brackets, " "));
+            return replaceCharacters(substring, brackets, " "); // " " is just a placeholder value, to make sure that the offset value doesn't brake.
+        });
+        console.log(text);
+    }
+
+    if (blockComments !== undefined) {
+        let startStrings: string[] = [];
+        let endStrings: string[] = [];
+        for (let i = 0; i < blockComments.length; i++) {
+            startStrings.push(escapeRegexString(blockComments[i][0]));
+            endStrings.push(escapeRegexString(blockComments[i][1]));
+        }
+        // let matchRegex = lineComments.join("|");
+        let matchRegex: string[] = [startStrings.join("|"), endStrings.join("|")];
+        text = text.replace(new RegExp(`(${matchRegex[0]})[^]*?(${matchRegex[1]})`, "g"), (comment: string): string => {
+            return replaceCharacters(comment, brackets, " "); // " " is just a placeholder value, to make sure that the offset value doesn't brake.
+        });
+    }
+
+    if (stringDelimiters !== undefined) {
+        for (let i = 0; i < stringDelimiters.length; i++) {
+            stringDelimiters[i] = escapeRegexString(stringDelimiters[i]);
+        }
+        let matchRegex = stringDelimiters.join("|");
+        text = text.replace(new RegExp(`(${matchRegex}).*?\\1`, "g"), (string: string): string => {
+            return replaceCharacters(string, brackets, " "); // " " is just a placeholder value, to make sure that the offset value doesn't brake.
+        });
     }
 
     let regex = new RegExp(`\\${brackets[0]}|\\${brackets[1]}`, "g");
@@ -115,3 +193,5 @@ export function unmatchedBracketPosOld(document: vscode.TextDocument, pos: vscod
     // console.log("end bracket search:", brackets, "pos", null);
     return null;
 }
+
+// A very bad comment ;)

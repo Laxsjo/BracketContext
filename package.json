@@ -5,7 +5,7 @@
     "category": [
         "Programming Languages"
     ],
-    "version": "0.0.2",
+    "version": "0.0.3",
     "engines": {
         "vscode": "^1.64.0"
     },
@@ -89,6 +89,52 @@
                             ],
                             "name": "curly"
                         }
+                    ]
+                },
+                "bracketcontext.lineComments": {
+                    "type": [
+                        "array",
+                        "string"
+                    ],
+                    "title": "Line Comment Strings",
+                    "markdownDescription": "A list of strings defining what strings make line comments. Defaults to `[\"//\", \"#\"]`",
+                    "default": [
+                        "//",
+                        "#"
+                    ]
+                },
+                "bracketcontext.blockComments": {
+                    "type": [
+                        "array"
+                    ],
+                    "title": "Block Comment Pairs",
+                    "markdownDescription": "A list of all types of block comments. Defaults to `[[\"/*\", \"*/\"]]`",
+                    "items": {
+                        "type": [
+                            "array",
+                            "string"
+                        ],
+                        "title": "Block Comment Pair",
+                        "description": "A list of two strings with the begining and end strings for block comments."
+                    },
+                    "default": [
+                        [
+                            "/*",
+                            "*/"
+                        ]
+                    ]
+                },
+                "bracketcontext.stringDelimiters": {
+                    "type": [
+                        "array",
+                        "string"
+                    ],
+                    "title": "Sting Delimiters",
+                    "markdownDescription": "A list of all string delimiters. Defaults to ``[\"\\\"\", \"'\", \"`\"]``",
+                    "default": [
+                        "\"",
+                        "'",
+                        "`"
                     ]
                 }
             }
