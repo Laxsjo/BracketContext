@@ -5,7 +5,7 @@
     "category": [
         "Programming Languages"
     ],
-    "version": "0.0.3",
+    "version": "0.0.4",
     "engines": {
         "vscode": "^1.64.0"
     },
@@ -98,6 +98,7 @@
                     ],
                     "title": "Line Comment Strings",
                     "markdownDescription": "A list of strings defining what strings make line comments. Defaults to `[\"//\", \"#\"]`",
+                    "scope": "language-overridable",
                     "default": [
                         "//",
                         "#"
@@ -117,6 +118,7 @@
                         "title": "Block Comment Pair",
                         "description": "A list of two strings with the begining and end strings for block comments."
                     },
+                    "scope": "language-overridable",
                     "default": [
                         [
                             "/*",
@@ -131,6 +133,7 @@
                     ],
                     "title": "Sting Delimiters",
                     "markdownDescription": "A list of all string delimiters. Defaults to ``[\"\\\"\", \"'\", \"`\"]``",
+                    "scope": "language-overridable",
                     "default": [
                         "\"",
                         "'",

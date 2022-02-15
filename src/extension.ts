@@ -43,11 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
                 console.error("Failed jumping to start of bracket pair: argument characters it didn't contain two strings.");
             }
 
-            console.log("ran jump start 0:", args.characters);
-
             commands.jumpBracket(textEditor, brackets.Direction.left, args.characters);
-
-            console.log("ran jump start 1:", args.characters);
         }
     );
 
@@ -61,11 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
                 console.error("Failed jumping to end of bracket pair: argument characters it didn't contain two strings.");
             }
 
-            console.log("ran jump end 0:", args.characters);
-
             commands.jumpBracket(textEditor, brackets.Direction.right, args.characters);
-
-            console.log("ran jump end 1:", args.characters);
         }
     );
 

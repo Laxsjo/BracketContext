@@ -10,6 +10,7 @@ This extension adds the following features:
 - Shortcut contexts for when the cursor is in between a pair of brackets.
 - The ability to customize and define new bracket types.
 - Commands for jumping to start and end of pairs of brackets.
+- A shortcut context for when the cursor is at the start of a new line, with only whitespace in front of it.
 
 > **Note:** This extension doesn't add any shortcuts. It only adds new contexts and commands which you can use to create new shortcuts.
 
@@ -137,6 +138,22 @@ Add the following to `keybinding.json`:
     "characters": ["(", ")"]
   },
   "when": "editorTextFocus"
+}
+```
+
+### Add Jump On Tab Shortcuts
+
+This shortcut jumps to the end of the current round `()` bracket pair, _only_ if the cursor is not at the start of the line.
+This allows the user to still tab to the correct indentation, but also tab to the end the current bracket.
+
+Add the following to `keybinding.json`:
+
+```json
+{
+  "key": "tab",
+  "command": "bracketcontext.jumpBracketEnd",
+  "args": { "characters": ["(", ")"] },
+  "when": "editorTextFocus && bracketcontext.bracket.round && !bracketcontext.cursorWhitespaceToLeft && !acceptSuggestionOnEnter"
 }
 ```
 
