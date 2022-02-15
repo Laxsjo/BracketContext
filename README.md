@@ -7,9 +7,9 @@ These contexts can then be used in shortcut when clauses.
 
 This extension adds the following features:
 
--   Shortcut contexts for when the cursor is in between a pair of brackets.
--   The ability to customize and define new bracket types.
--   Commands for jumping to start and end of pairs of brackets.
+- Shortcut contexts for when the cursor is in between a pair of brackets.
+- The ability to customize and define new bracket types.
+- Commands for jumping to start and end of pairs of brackets.
 
 > **Note:** This extension doesn't add any shortcuts. It only adds new contexts and commands which you can use to create new shortcuts.
 
@@ -23,27 +23,27 @@ A bracket type defines two characters which define the bracket types and a name 
 
 It should contain two properties:
 
--   `characters`: A list of two single character strings.
--   `name`: A string.
+- `characters`: A list of two single character strings.
+- `name`: A string.
 
 Defaults to:
 
 ```json
 {
-    "bracketcontext.brackets": [
-        {
-            "characters": ["(", ")"],
-            "name": "round"
-        },
-        {
-            "characters": ["[", "]"],
-            "name": "square"
-        },
-        {
-            "characters": ["{", "}"],
-            "name": "curly"
-        }
-    ]
+  "bracketcontext.brackets": [
+    {
+      "characters": ["(", ")"],
+      "name": "round"
+    },
+    {
+      "characters": ["[", "]"],
+      "name": "square"
+    },
+    {
+      "characters": ["{", "}"],
+      "name": "curly"
+    }
+  ]
 }
 ```
 
@@ -95,12 +95,12 @@ An example defining a new bracket type in `settings.json`:
 
 ```json
 {
-    "bracketcontext.brackets": [
-        {
-            "characters": ["(", ")"],
-            "name": "round"
-        }
-    ]
+  "bracketcontext.brackets": [
+    {
+      "characters": ["(", ")"],
+      "name": "round"
+    }
+  ]
 }
 ```
 
@@ -110,9 +110,9 @@ _This shortcut will only activate when the cursor is in between a pair of round 
 
 ```json
 {
-    "key": "a_key",
-    "command": "a_command",
-    "when": "textInputFocus && bracketcontext.bracket.round"
+  "key": "a_key",
+  "command": "a_command",
+  "when": "textInputFocus && bracketcontext.bracket.round"
 }
 ```
 
