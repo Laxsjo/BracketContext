@@ -35,29 +35,29 @@ export function activate(context: vscode.ExtensionContext) {
 
     let jumpStart = vscode.commands.registerTextEditorCommand(
         "bracketcontext.jumpBracketStart",
-        (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: string[] }) => {
-            if (args.characters === undefined) {
-                console.error("Failed jumping to start of bracket pair: argument characters was not provided");
-            }
-            if (args.characters.length < 2 || typeof args.characters[0] !== "string" || typeof args.characters[1] !== "string") {
-                console.error("Failed jumping to start of bracket pair: argument characters it didn't contain two strings.");
-            }
-
-            commands.jumpBracket(textEditor, brackets.Direction.left, args.characters);
+        (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
+            commands.jumpBracket(textEditor, brackets.Direction.left, false, args?.characters ?? null);
         }
     );
 
     let jumpEnd = vscode.commands.registerTextEditorCommand(
         "bracketcontext.jumpBracketEnd",
-        (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: string[] }) => {
-            if (args.characters === undefined) {
-                console.error("Failed jumping to end of bracket pair: argument characters was not provided");
-            }
-            if (args.characters.length < 2 || typeof args.characters[0] !== "string" || typeof args.characters[1] !== "string") {
-                console.error("Failed jumping to end of bracket pair: argument characters it didn't contain two strings.");
-            }
+        (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
+            commands.jumpBracket(textEditor, brackets.Direction.right, false, args?.characters ?? null);
+        }
+    );
 
-            commands.jumpBracket(textEditor, brackets.Direction.right, args.characters);
+    let jumpLineStart = vscode.commands.registerTextEditorCommand(
+        "bracketcontext.jumpBracketLineStart",
+        (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
+            commands.jumpBracket(textEditor, brackets.Direction.left, true, args?.characters ?? null);
+        }
+    );
+
+    let jumpLineEnd = vscode.commands.registerTextEditorCommand(
+        "bracketcontext.jumpBracketLineEnd",
+        (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
+            commands.jumpBracket(textEditor, brackets.Direction.right, true, args?.characters ?? null);
         }
     );
 
@@ -76,13 +76,15 @@ export function activate(context: vscode.ExtensionContext) {
                         "    list[2] = () => {\n" +
                         "        return 2 + '05';\n" +
                         "    };\n" +
-                        "}"
+                        "}\n" +
+                        "\n" +
+                        "/([\"'])(\\\\u[a-zA-Z0-9]{4}|\\\\[^u]|[^\\\\])*?\\1:?|\\b(true|false|null|undefined)\\b|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?|[:=+\\-*/<>]+|[()\\[\\]{}]+|[,;.]+/g"
                 );
             });
         }
     });
 
-    context.subscriptions.push(jumpStart, jumpEnd, paste);
+    context.subscriptions.push(jumpStart, jumpEnd, jumpLineStart, jumpLineEnd, paste);
 }
 
 // this method is called when your extension is deactivated

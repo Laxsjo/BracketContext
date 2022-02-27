@@ -27,22 +27,22 @@ function getstringDelimiters(): string[] | undefined {
     return stringDelimiters;
 }
 
-function charAtPos(document: vscode.TextDocument, pos: vscode.Position): string {
-    return document.lineAt(pos).text[pos.character];
-}
+// function charAtPos(document: vscode.TextDocument, pos: vscode.Position): string {
+//     return document.lineAt(pos).text[pos.character];
+// }
 
-function shiftPos(document: vscode.TextDocument, pos: vscode.Position, dir: Direction): vscode.Position | null {
-    let absolutePos = document.offsetAt(pos);
-    absolutePos += dir;
+// function shiftPos(document: vscode.TextDocument, pos: vscode.Position, dir: Direction): vscode.Position | null {
+//     let absolutePos = document.offsetAt(pos);
+//     absolutePos += dir;
 
-    if (absolutePos < 0 || absolutePos > document.getText().length) {
-        return null;
-    }
+//     if (absolutePos < 0 || absolutePos > document.getText().length) {
+//         return null;
+//     }
 
-    let newPos = document.positionAt(absolutePos);
-    // If newPos same as pos, shift by two. See: https://github.com/Microsoft/vscode/issues/23247 (Thanks sashaweiss!)
-    return pos.isEqual(newPos) ? document.positionAt(absolutePos + dir) : newPos;
-}
+//     let newPos = document.positionAt(absolutePos);
+//     // If newPos same as pos, shift by two. See: https://github.com/Microsoft/vscode/issues/23247 (Thanks sashaweiss!)
+//     return pos.isEqual(newPos) ? document.positionAt(absolutePos + dir) : newPos;
+// }
 
 function escapeRegexString(regexString: string): string {
     let specialChars = ["/", "\\", "^", "$", ".", "|", "?", "*", "+", "-", "(", ")", "{", "}", "[", "]"];
@@ -54,13 +54,13 @@ function escapeRegexString(regexString: string): string {
     return escapedString;
 }
 
-function replaceCharacters(string: string, chars: string[], replaceChar: string): string {
-    let escapedChars = chars.map((char: string): string => {
-        return escapeRegexString(char);
-    });
-    // console.log(string, "=>", string.replace(new RegExp(`[${escapedChars.join("")}]`, "g"), replaceChar));
-    return string.replace(new RegExp(`[${escapedChars.join("")}]`, "g"), replaceChar);
-}
+// function replaceCharacters(string: string, chars: string[], replaceChar: string): string {
+//     let escapedChars = chars.map((char: string): string => {
+//         return escapeRegexString(char);
+//     });
+//     // console.log(string, "=>", string.replace(new RegExp(`[${escapedChars.join("")}]`, "g"), replaceChar));
+//     return string.replace(new RegExp(`[${escapedChars.join("")}]`, "g"), replaceChar);
+// }
 
 function getLineCommentsRegex(lineComments: string[]): RegExp {
     let escapedLineComments: string[] = [];
@@ -89,42 +89,70 @@ function getStringRegex(stringDelimiters: string[]): RegExp {
     let matchRegex = stringDelimiters.join("|");
     return new RegExp(`(${matchRegex}).*?\\1`, "g");
 }
+function getRegexRegex(): RegExp {
+    // From this extension: https://marketplace.visualstudio.com/items?itemName=chrmarti.regex
+    return /(?<=^|\s|[()={},:?;])(\/((?:\\\/|\[[^\]]*\]|[^/])+)\/([gimuy]*))(?=\s|[()={},:?;]|$)/g;
+}
 
-export function unmatchedBracketPos(document: vscode.TextDocument, pos: vscode.Position, dir: Direction, brackets: string[]): vscode.Position | null {
+export function unmatchedBracketPos(
+    document: vscode.TextDocument,
+    pos: vscode.Position,
+    dir: Direction,
+    sameLine: boolean,
+    brackets: [string, string]
+): vscode.Position | null {
     let lineComments = getLineComments();
     let blockComments = getBlockComments();
     let stringDelimiters = getstringDelimiters();
 
-    let orderedBrackets: string[] = [];
+    let orderedBrackets: [string, string] = ["", ""];
     orderedBrackets[0] = brackets[dir === -1 ? 0 : 1];
     orderedBrackets[1] = brackets[dir === -1 ? 1 : 0];
 
-    let offset = document.offsetAt(pos);
-    let text = document.getText();
+    let line = document.lineAt(pos.line);
+    let text: string;
+    let offset: number;
+
+    if (sameLine) {
+        text = line.text;
+        offset = pos.character;
+    } else {
+        text = document.getText();
+        offset = document.offsetAt(pos);
+    }
+
+    if (lineComments !== undefined) {
+        text = text.replace(getLineCommentsRegex(lineComments), (comment: string): string => {
+            // return replaceCharacters(substring, brackets, " "); // " " is just a placeholder character, to make sure that the offset value doesn't break.
+            return " ".repeat(comment.length);
+        });
+    }
+
+    if (blockComments !== undefined) {
+        text = text.replace(getBlockCommentsRegex(blockComments), (comment: string): string => {
+            // return replaceCharacters(comment, brackets, " ");
+            return " ".repeat(comment.length);
+        });
+    }
+
+    text = text.replace(getRegexRegex(), (regexString): string => {
+        return " ".repeat(regexString.length);
+    });
+
+    if (stringDelimiters !== undefined) {
+        text = text.replace(getStringRegex(stringDelimiters), (string: string): string => {
+            // return replaceCharacters(string, brackets, " ");
+            return " ".repeat(string.length);
+        });
+    }
+
     if (dir === -1) {
         text = text.slice(0, offset);
     } else {
         text = text.slice(offset, undefined);
     }
 
-    if (lineComments !== undefined) {
-        text = text.replace(getLineCommentsRegex(lineComments), (substring: string): string => {
-            // console.log(substring, "=>", replaceCharacters(substring, brackets, " "));
-            return replaceCharacters(substring, brackets, " "); // " " is just a placeholder value, to make sure that the offset value doesn't brake.
-        });
-    }
-
-    if (blockComments !== undefined) {
-        text = text.replace(getBlockCommentsRegex(blockComments), (comment: string): string => {
-            return replaceCharacters(comment, brackets, " "); // " " is just a placeholder value, to make sure that the offset value doesn't brake.
-        });
-    }
-
-    if (stringDelimiters !== undefined) {
-        text = text.replace(getStringRegex(stringDelimiters), (string: string): string => {
-            return replaceCharacters(string, brackets, " "); // " " is just a placeholder value, to make sure that the offset value doesn't brake.
-        });
-    }
+    console.log("searched text", text);
 
     let regex = new RegExp(`\\${brackets[0]}|\\${brackets[1]}`, "g");
     let bracketMatchIterator = text.matchAll(regex);
@@ -159,7 +187,12 @@ export function unmatchedBracketPos(document: vscode.TextDocument, pos: vscode.P
     }
 
     if (foundOffset) {
-        let foundPos = document.positionAt(foundOffset);
+        let foundPos: vscode.Position;
+        if (sameLine) {
+            foundPos = new vscode.Position(line.lineNumber, foundOffset);
+        } else {
+            foundPos = document.positionAt(foundOffset);
+        }
         if (document.validatePosition(foundPos)) {
             return foundPos;
         }
@@ -167,41 +200,126 @@ export function unmatchedBracketPos(document: vscode.TextDocument, pos: vscode.P
     return null;
 }
 
-export function unmatchedBracketPosOld(document: vscode.TextDocument, pos: vscode.Position, dir: Direction, brackets: string[]): vscode.Position | null {
-    // console.log("start bracket search:", brackets);
-    let orderedBrackets: string[] = [];
-    orderedBrackets[0] = brackets[dir === -1 ? 0 : 1];
-    orderedBrackets[1] = brackets[dir === -1 ? 1 : 0];
+// export function unmatchedBracketPosLine(document: vscode.TextDocument, pos: vscode.Position, dir: Direction, brackets: string[]): vscode.Position | null {
+//     let lineComments = getLineComments();
+//     let blockComments = getBlockComments();
+//     let stringDelimiters = getstringDelimiters();
 
-    let currentPos = dir === -1 ? shiftPos(document, pos, -1) : pos;
+//     let orderedBrackets: string[] = [];
+//     orderedBrackets[0] = brackets[dir === -1 ? 0 : 1];
+//     orderedBrackets[1] = brackets[dir === -1 ? 1 : 0];
 
-    if (currentPos === null) {
-        return null;
-    }
-    let char = charAtPos(document, currentPos);
-    if (char === orderedBrackets[0]) {
-        return dir === -1 ? currentPos : shiftPos(document, currentPos, 1); // Places pos on the outside of bracket
-    }
+//     let line = document.lineAt(pos.line);
+//     let offset = pos.character;
 
-    let unpairedAmount: number = 0;
+//     let text = line.text;
+//     if (dir === -1) {
+//         text = text.slice(0, pos.character);
+//     } else {
+//         text = text.slice(pos.character, undefined);
+//     }
 
-    while (currentPos) {
-        char = charAtPos(document, currentPos);
+//     if (lineComments !== undefined) {
+//         text = text.replace(getLineCommentsRegex(lineComments), (comment: string): string => {
+//             // return replaceCharacters(substring, brackets, " "); // " " is just a placeholder character, to make sure that the offset value doesn't break.
+//             return " ".repeat(comment.length);
+//         });
+//     }
 
-        if (char === orderedBrackets[0]) {
-            if (unpairedAmount > 0) {
-                unpairedAmount--;
-            } else {
-                return dir === -1 ? currentPos : shiftPos(document, currentPos, 1); // Places pos on the outside of bracket
-            }
-        } else if (char === orderedBrackets[1]) {
-            unpairedAmount++;
-        }
+//     if (blockComments !== undefined) {
+//         text = text.replace(getBlockCommentsRegex(blockComments), (comment: string): string => {
+//             // return replaceCharacters(comment, brackets, " ");
+//             return " ".repeat(comment.length);
+//         });
+//     }
 
-        currentPos = shiftPos(document, currentPos, dir);
-    }
+//     text = text.replace(getRegexRegex(), (regexString): string => {
+//         return " ".repeat(regexString.length);
+//     });
 
-    return null;
-}
+//     if (stringDelimiters !== undefined) {
+//         text = text.replace(getStringRegex(stringDelimiters), (string: string): string => {
+//             // return replaceCharacters(string, brackets, " ");
+//             return " ".repeat(string.length);
+//         });
+//     }
 
-// A very bad comment ;)
+//     // console.log("searched text", text);
+
+//     let regex = new RegExp(`\\${brackets[0]}|\\${brackets[1]}`, "g");
+//     let bracketMatchIterator = text.matchAll(regex);
+
+//     let bracketMatches: RegExpMatchArray[] = Array.from(bracketMatchIterator);
+//     if (dir === -1) {
+//         bracketMatches = bracketMatches.reverse();
+//     }
+
+//     let unpairedAmount: number = 0;
+//     let foundOffset: number | null = null;
+
+//     for (const match of bracketMatches) {
+//         if (match.index === undefined) {
+//             continue;
+//         }
+//         let char = match[0];
+
+//         if (char === orderedBrackets[0]) {
+//             if (unpairedAmount > 0) {
+//                 unpairedAmount--;
+//             } else {
+//                 foundOffset = dir === -1 ? match.index : offset + match.index;
+//                 if (dir === 1) {
+//                     foundOffset += 1; // Always place cursor on outside of bracket.
+//                 }
+//                 break;
+//             }
+//         } else if (char === orderedBrackets[1]) {
+//             unpairedAmount++;
+//         }
+//     }
+
+//     if (foundOffset) {
+//         let foundPos = new vscode.Position(line.lineNumber, offset);
+//         if (document.validatePosition(foundPos)) {
+//             return foundPos;
+//         }
+//     }
+//     return null;
+// }
+
+// export function unmatchedBracketPosOld(document: vscode.TextDocument, pos: vscode.Position, dir: Direction, brackets: string[]): vscode.Position | null {
+//     // console.log("start bracket search:", brackets);
+//     let orderedBrackets: string[] = [];
+//     orderedBrackets[0] = brackets[dir === -1 ? 0 : 1];
+//     orderedBrackets[1] = brackets[dir === -1 ? 1 : 0];
+
+//     let currentPos = dir === -1 ? shiftPos(document, pos, -1) : pos;
+
+//     if (currentPos === null) {
+//         return null;
+//     }
+//     let char = charAtPos(document, currentPos);
+//     if (char === orderedBrackets[0]) {
+//         return dir === -1 ? currentPos : shiftPos(document, currentPos, 1); // Places pos on the outside of bracket
+//     }
+
+//     let unpairedAmount: number = 0;
+
+//     while (currentPos) {
+//         char = charAtPos(document, currentPos);
+
+//         if (char === orderedBrackets[0]) {
+//             if (unpairedAmount > 0) {
+//                 unpairedAmount--;
+//             } else {
+//                 return dir === -1 ? currentPos : shiftPos(document, currentPos, 1); // Places pos on the outside of bracket
+//             }
+//         } else if (char === orderedBrackets[1]) {
+//             unpairedAmount++;
+//         }
+
+//         currentPos = shiftPos(document, currentPos, dir);
+//     }
+
+//     return null;
+// }

@@ -2,17 +2,17 @@ import * as vscode from "vscode";
 import * as brackets from "./brackets";
 
 export interface BracketType {
-    characters: string[];
+    characters: [string, string];
     name: string;
 }
 
-function getBracketTypes(): BracketType[] | undefined {
+export function getBracketTypes(): BracketType[] | undefined {
     let bracketPairs: BracketType[] | undefined = vscode.workspace.getConfiguration("bracketcontext").get("brackets");
     return bracketPairs;
 }
 
-function setBracketContextState(bracketType: BracketType, state: boolean) {
-    vscode.commands.executeCommand("setContext", `bracketcontext.bracket.${bracketType.name}`, state);
+function setBracketContextState(bracketType: BracketType, sameLine: boolean, state: boolean) {
+    vscode.commands.executeCommand("setContext", `bracketcontext.${sameLine ? "insideBracketsLine" : "insideBrackets"}.${bracketType.name}`, state);
     // console.log(`bracketcontext.bracket.${bracketType.name}:`, state);
 }
 function setWhiteSpaceContextState(state: boolean) {
@@ -27,8 +27,11 @@ function checkBracketContext(document: vscode.TextDocument, pos: vscode.Position
     }
 
     for (const bracketType of bracketTypes) {
-        let matchedPos = brackets.unmatchedBracketPos(document, pos, brackets.Direction.right, bracketType.characters);
-        setBracketContextState(bracketType, matchedPos !== null);
+        let matchedPos = brackets.unmatchedBracketPos(document, pos, brackets.Direction.right, false, bracketType.characters);
+        setBracketContextState(bracketType, false, matchedPos !== null);
+
+        matchedPos = brackets.unmatchedBracketPos(document, pos, brackets.Direction.right, true, bracketType.characters);
+        setBracketContextState(bracketType, true, matchedPos !== null);
     }
 }
 

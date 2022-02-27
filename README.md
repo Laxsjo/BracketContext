@@ -14,6 +14,35 @@ This extension adds the following features:
 
 > **Note:** This extension doesn't add any shortcuts. It only adds new contexts and commands which you can use to create new shortcuts.
 
+## Commands
+
+There are the following two sets of commands for jumping to the start and end of bracket pairs. One for jumping to the next bracket anywhere and the other for jumping to the next bracket on the current line.
+
+- **`Jump to bracket pair start`**: `bracketcontext.jumpBracketStart`
+- **`Jump to bracket pair end`**: `bracketcontext.jumpBracketEnd`
+
+- **`Jump to bracket pair start on line`**: `bracketcontext.jumpBracketLineStart`
+- **`Jump to bracket pair end on line`**: `bracketcontext.jumpBracketLineEnd`
+
+These commands will by default jump to the nearest bracket that was defined in `bracketcontext.brackets`. You can overide this by passing an argument `characters` that is a list of two string that define the opening and closing characters.
+
+## Contexts
+
+[When clause contexts](https://code.visualstudio.com/api/references/when-clause-contexts) can be used inside shortcuts, among other things, to only activate the shortcut when the context is true.
+
+This extension adds two groups of contexts that are true when the cursor is currently between a pair of brackets.
+They follow the following syntax where `bracketTypeHere` is a bracket name defined in `bracketcontext.brackets`:
+
+- `bracketcontext.insideBrackets.bracketTypeHere`
+- `bracketcontext.insideBracketsLine.bracketTypeHere`
+  These contexts `insideBracketsLine` are only true when the bracket lies on the same line as the cursor.
+
+It also adds a context for detecting the cursor position relative to the whitespace:
+
+- `bracketcontext.cursorWhitespaceToLeft`
+  This context is true when theres only whitespace to the left of the cursor.
+  The most common usage for this would be to detect when the cursor is at the indentation of the line.
+
 ## Extension Settings
 
 ### Bracket Types
@@ -159,6 +188,11 @@ Add the following to `keybinding.json`:
 
 ## Release Notes
 
-### 1.0.0
+### 0.0.1
 
 Initial release of this extension
+
+### 0.0.5
+
+- Added support for detecting regexes and excluding the from the bracket search.
+- Added support for only jumping to bracket on same line.
