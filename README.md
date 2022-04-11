@@ -3,6 +3,8 @@
 This visual studio code extension adds new contexts that specify if the cursor is currently inside a pair of brackets.
 These contexts can then be used in shortcut when clauses.
 
+> **Note:** This extension only supports jumping to and sensing brackets that are on the same line as the cursor.
+
 ## Features
 
 This extension adds the following features:
@@ -16,13 +18,10 @@ This extension adds the following features:
 
 ## Commands
 
-There are the following two sets of commands for jumping to the start and end of bracket pairs. One for jumping to the next bracket anywhere and the other for jumping to the next bracket on the current line.
+There are the following two sets of commands for jumping to the start and end of bracket pairs. They only jump to the next bracket on the current line.
 
 - **`Jump to bracket pair start`**: `bracketcontext.jumpBracketStart`
 - **`Jump to bracket pair end`**: `bracketcontext.jumpBracketEnd`
-
-- **`Jump to bracket pair start on line`**: `bracketcontext.jumpBracketLineStart`
-- **`Jump to bracket pair end on line`**: `bracketcontext.jumpBracketLineEnd`
 
 These commands will by default jump to the nearest bracket that was defined in `bracketcontext.brackets`. You can overide this by passing an argument `characters` that is a list of two string that define the opening and closing characters.
 
@@ -34,8 +33,7 @@ This extension adds two groups of contexts that are true when the cursor is curr
 They follow the following syntax where `bracketTypeHere` is a bracket name defined in `bracketcontext.brackets`:
 
 - `bracketcontext.insideBrackets.bracketTypeHere`
-- `bracketcontext.insideBracketsLine.bracketTypeHere`
-  These contexts `insideBracketsLine` are only true when the bracket lies on the same line as the cursor.
+  These contexts are only true when the bracket lies on the same line as the cursor.
 
 It also adds a context for detecting the cursor position relative to the whitespace:
 
@@ -196,3 +194,10 @@ Initial release of this extension
 
 - Added support for detecting regexes and excluding the from the bracket search.
 - Added support for only jumping to bracket on same line.
+
+### 0.0.6
+
+- Brackets are now always checked for on the current line for performance reasons.
+  The commands `jumpBracketLineStart` and `jumpBracketLineEnd` have been removed,
+  and their functionality have been moved to `jumpBracketStart` and `jumpBracketEnd`
+  respectively.

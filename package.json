@@ -1,11 +1,11 @@
 {
     "name": "bracketcontext",
     "displayName": "Bracket Context",
-    "description": "Adds shortcut contexts that tracks when the cursor is inside function parameters.",
+    "description": "Adds shortcut contexts that tracks when the cursor is inside pairs of brackets.",
     "category": [
         "Programming Languages"
     ],
-    "version": "0.0.5",
+    "version": "0.0.6",
     "engines": {
         "vscode": "^1.64.0"
     },
@@ -35,16 +35,6 @@
             {
                 "command": "bracketcontext.jumpBracketEnd",
                 "title": "Jump to bracket pair end",
-                "category": "Bracket Context"
-            },
-            {
-                "command": "bracketcontext.jumpBracketLineStart",
-                "title": "Jump to bracket pair start on line",
-                "category": "Bracket Context"
-            },
-            {
-                "command": "bracketcontext.jumpBracketLineEnd",
-                "title": "Jump to bracket pair end on line",
                 "category": "Bracket Context"
             }
         ],

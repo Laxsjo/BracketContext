@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import { match } from "assert";
 import * as vscode from "vscode";
+import * as settings from "./settings";
 import * as brackets from "./brackets";
 import * as contexts from "./contexts";
 import * as commands from "./commands";
@@ -16,50 +17,36 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeTextEditorSelection(function (event) {
         let editor = event.textEditor;
 
-        // let longList = [0];
-        // longList.length = 10;
-        // longList = longList.fill(0);
-        // for (let item of longList) {
-        //     item += Math.random();
-        //     console.log(item);
-        // }
-
-        // while (true) {
-        //     console.log(Math.random());
-        // }
-
-        // console.log("moved, pos:", editor.selection.active);
-
         contexts.checkContexts(editor.document, editor.selection.active);
     });
 
     let jumpStart = vscode.commands.registerTextEditorCommand(
         "bracketcontext.jumpBracketStart",
         (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
-            commands.jumpBracket(textEditor, brackets.Direction.left, false, args?.characters ?? null);
+            commands.jumpBracket(textEditor, settings.Direction.left, args?.characters ?? null);
         }
     );
 
     let jumpEnd = vscode.commands.registerTextEditorCommand(
         "bracketcontext.jumpBracketEnd",
         (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
-            commands.jumpBracket(textEditor, brackets.Direction.right, false, args?.characters ?? null);
+            commands.jumpBracket(textEditor, settings.Direction.right, args?.characters ?? null);
         }
     );
 
-    let jumpLineStart = vscode.commands.registerTextEditorCommand(
-        "bracketcontext.jumpBracketLineStart",
-        (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
-            commands.jumpBracket(textEditor, brackets.Direction.left, true, args?.characters ?? null);
-        }
-    );
+    // let jumpLineStart = vscode.commands.registerTextEditorCommand(
+    //     "bracketcontext.jumpBracketLineStart",
+    //     (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
+    //         commands.jumpBracket(textEditor, brackets.Direction.left, true, args?.characters ?? null);
+    //     }
+    // );
 
-    let jumpLineEnd = vscode.commands.registerTextEditorCommand(
-        "bracketcontext.jumpBracketLineEnd",
-        (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
-            commands.jumpBracket(textEditor, brackets.Direction.right, true, args?.characters ?? null);
-        }
-    );
+    // let jumpLineEnd = vscode.commands.registerTextEditorCommand(
+    //     "bracketcontext.jumpBracketLineEnd",
+    //     (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: { characters: [string, string] }) => {
+    //         commands.jumpBracket(textEditor, brackets.Direction.right, true, args?.characters ?? null);
+    //     }
+    // );
 
     let paste = vscode.commands.registerCommand("bracketcontext.pasteFunction", () => {
         let editor = vscode.window.activeTextEditor as vscode.TextEditor;
@@ -84,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(jumpStart, jumpEnd, jumpLineStart, jumpLineEnd, paste);
+    context.subscriptions.push(jumpStart, jumpEnd, /*  jumpLineStart, jumpLineEnd, */ paste);
 }
 
 // this method is called when your extension is deactivated
